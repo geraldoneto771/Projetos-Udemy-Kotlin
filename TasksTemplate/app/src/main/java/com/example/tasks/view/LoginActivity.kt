@@ -54,7 +54,7 @@ class LoginActivity : AppCompatActivity(), View.OnClickListener {
      * Observa ViewModel
      */
     private fun observe() {
-        
+
     }
 
     /**
