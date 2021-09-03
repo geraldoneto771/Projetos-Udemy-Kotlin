@@ -30,7 +30,7 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
      * Faz login usando API
      */
     fun doLogin(email: String, password: String) {
-        mPersonRepository.login(email, password, object : APIListener {
+        mPersonRepository.login(email, password, object : APIListener<HeaderModel> {
             override fun onSucess(model: HeaderModel) {
 
                 mSharedPreferences.store(TaskConstants.SHARED.TOKEN_KEY, model.token)
@@ -45,7 +45,6 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
             override fun onFailure(str: String) {
                 mLogin.value = ValidationListener(str)
             }
-
         })
     }
 
