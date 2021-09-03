@@ -61,6 +61,7 @@ class LoginActivity : AppCompatActivity(), View.OnClickListener {
             if(it.sucess()){
                 startActivity(Intent(this, MainActivity::class.java))
 
+
             }else
             {
                 val message = it.failure()
