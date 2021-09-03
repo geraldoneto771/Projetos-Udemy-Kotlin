@@ -34,6 +34,9 @@ class PriorityRepository(context: Context) {
         })
     }
 
+    fun list() = mPriorityDatabase.list()
+
+
 
 
 }
