@@ -6,6 +6,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.example.tasks.service.listener.ValidationListener
 import com.example.tasks.service.models.PriorityModel
+import com.example.tasks.service.models.TaskModel
 import com.example.tasks.service.repository.PriorityRepository
 
 class TaskFormViewModel(application: Application) : AndroidViewModel(application) {
@@ -17,6 +18,10 @@ class TaskFormViewModel(application: Application) : AndroidViewModel(application
 
     fun listPriorities(){
         mPriorityList.value = mPriorityRepository.list()
+    }
+
+    fun save(task: TaskModel){
+
     }
 
 }
