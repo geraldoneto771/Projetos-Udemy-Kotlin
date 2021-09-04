@@ -71,7 +71,7 @@ class AllTasksFragment : Fragment() {
             if(it.count() > 0) {
                 mAdapter.updateListener(it)
             }
-        }
+        })
 
     }
 
