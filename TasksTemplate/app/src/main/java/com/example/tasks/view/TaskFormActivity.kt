@@ -43,6 +43,7 @@ class TaskFormActivity : AppCompatActivity(), View.OnClickListener, DatePickerDi
         if(bundle != null){
             mTaskId = bundle.getInt(TaskConstants.BUNDLE.TASKID)
             mViewModel.load(mTaskId)
+            button_save.text = getString(R.string.update_task)
         }
     }
 
@@ -91,9 +92,14 @@ class TaskFormActivity : AppCompatActivity(), View.OnClickListener, DatePickerDi
 
         mViewModel.validation.observe(this, androidx.lifecycle.Observer {
             if(it.sucess()) {
-                Toast.makeText(this, "Sucesso!!!", Toast.LENGTH_SHORT)
+                if (mTaskId == 0) {
+                    toast(applicationContext.getString(R.string.task_created))
+                } else {
+                    toast(applicationContext.getString(R.string.task_updated))
+                }
+                finish()
             } else{
-                Toast.makeText(this, it.failure(), Toast.LENGTH_SHORT)
+                toast(it.failure())
             }
         })
 
@@ -105,6 +111,10 @@ class TaskFormActivity : AppCompatActivity(), View.OnClickListener, DatePickerDi
             val date = SimpleDateFormat("dd/MM/yyyy").parse(it.dueDate)
             button_date.text = mDateFormat.format(date)
         })
+    }
+
+    private fun toast(str: String) {
+        Toast.makeText(applicationContext, str, Toast.LENGTH_SHORT).show()
     }
 
     private fun getIndex(priorityId: Int): Int {

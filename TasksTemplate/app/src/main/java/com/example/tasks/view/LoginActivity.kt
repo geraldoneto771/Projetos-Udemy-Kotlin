@@ -60,7 +60,7 @@ class LoginActivity : AppCompatActivity(), View.OnClickListener {
         mViewModel.login.observe(this, Observer {
             if(it.sucess()){
                 startActivity(Intent(this, MainActivity::class.java))
-
+                finish()
 
             }else
             {
@@ -72,6 +72,7 @@ class LoginActivity : AppCompatActivity(), View.OnClickListener {
         mViewModel.loggedUser.observe(this, Observer {
             if(it){
                 startActivity(Intent(this, MainActivity::class.java))
+                finish()
             }
         })
     }
