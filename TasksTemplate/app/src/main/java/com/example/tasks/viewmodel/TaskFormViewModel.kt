@@ -22,19 +22,52 @@ class TaskFormViewModel(application: Application) : AndroidViewModel(application
     private val mValidation = MutableLiveData<ValidationListener>()
     var validation: LiveData<ValidationListener> = mValidation
 
+    private val mTask = MutableLiveData<TaskModel>()
+    var task: LiveData<TaskModel> = mTask
+
     fun listPriorities(){
         mPriorityList.value = mPriorityRepository.list()
     }
 
     fun save(task: TaskModel){
-        mTaskRepository.create(task, object : APIListener<Boolean>{
 
-            override fun onSucess(model: Boolean) {
-                mValidation.value = ValidationListener()
+        if(task.id == 0){
+            mTaskRepository.create(task, object : APIListener<Boolean>{
+
+                override fun onSucess(model: Boolean) {
+                    mValidation.value = ValidationListener()
+                }
+
+                override fun onFailure(str: String) {
+                    mValidation.value = ValidationListener(str)
+                }
+
+            })
+        } else{
+            mTaskRepository.update(task, object : APIListener<Boolean>{
+
+                override fun onSucess(model: Boolean) {
+                    mValidation.value = ValidationListener()
+                }
+
+                override fun onFailure(str: String) {
+                    mValidation.value = ValidationListener(str)
+                }
+
+            })
+        }
+
+
+    }
+
+    fun load(id: Int){
+        mTaskRepository.load(id, object : APIListener<TaskModel>{
+            override fun onSucess(model: TaskModel) {
+                mTask.value = model
             }
 
-            override fun onFailure(str: String) {
-                mValidation.value = ValidationListener(str)
+            override fun onFailure(string: String) {
+
             }
 
         })

@@ -6,6 +6,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.example.tasks.service.listener.APIListener
+import com.example.tasks.service.listener.ValidationListener
 import com.example.tasks.service.models.PriorityModel
 import com.example.tasks.service.models.TaskModel
 import com.example.tasks.service.repository.TaskRepository
@@ -13,6 +14,9 @@ import com.example.tasks.service.repository.TaskRepository
 class AllTasksViewModel(application: Application) : AndroidViewModel(application) {
 
     private val mTaskRepository = TaskRepository(application)
+
+    private val mValidation = MutableLiveData<ValidationListener>()
+    var validation: LiveData<ValidationListener> = mValidation
 
     private val mList = MutableLiveData<List<TaskModel>>()
     var task: LiveData<List<TaskModel>> = mList
@@ -23,8 +27,41 @@ class AllTasksViewModel(application: Application) : AndroidViewModel(application
                 mList.value = model
             }
 
-            override fun onFailure(string: String) {
+            override fun onFailure(str: String) {
                 mList.value = arrayListOf()
+                mValidation.value = ValidationListener(str)
+            }
+
+        })
+    }
+
+    fun complete(id: Int){
+        updateStatus(id, true)
+    }
+
+    fun undo(id: Int){
+        updateStatus(id, false)
+    }
+
+    fun delete(id: Int){
+        mTaskRepository.delete(id, object : APIListener<Boolean>{
+            override fun onSucess(model: Boolean) {
+                list()
+            }
+
+            override fun onFailure(string: String) {
+            }
+
+        })
+    }
+
+    private fun updateStatus(id: Int, complete: Boolean){
+        mTaskRepository.updateStatus(id, complete, object : APIListener<Boolean>{
+            override fun onSucess(model: Boolean) {
+                list()
+            }
+
+            override fun onFailure(string: String) {
             }
 
         })

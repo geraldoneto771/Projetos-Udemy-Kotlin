@@ -9,6 +9,7 @@ import android.widget.DatePicker
 import android.widget.Toast
 import androidx.lifecycle.ViewModelProvider
 import com.example.tasks.R
+import com.example.tasks.service.constants.TaskConstants
 import com.example.tasks.service.models.TaskModel
 import com.example.tasks.viewmodel.TaskFormViewModel
 import kotlinx.android.synthetic.main.activity_task_form.*
@@ -20,6 +21,7 @@ class TaskFormActivity : AppCompatActivity(), View.OnClickListener, DatePickerDi
     private lateinit var mViewModel: TaskFormViewModel
     private val mDateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.ENGLISH)
     private val mListPriorityId: MutableList<Int> = arrayListOf()
+    private var mTaskId = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -32,6 +34,28 @@ class TaskFormActivity : AppCompatActivity(), View.OnClickListener, DatePickerDi
         observe()
 
         mViewModel.listPriorities()
+
+        loadDataFormActivity()
+    }
+
+    private fun loadDataFormActivity() {
+        val bundle = intent.extras
+        if(bundle != null){
+            mTaskId = bundle.getInt(TaskConstants.BUNDLE.TASKID)
+            mViewModel.load(mTaskId)
+        }
+    }
+
+    private fun handleSave() {
+        val task = TaskModel().apply{
+            this.id = mTaskId
+            this.description = edit_description.text.toString()
+            this.complete = check_complete.isChecked
+            this.dueDate = button_date.text.toString()
+            this.priorityId = mListPriorityId[spinner_priority.selectedItemPosition]
+        }
+
+        mViewModel.save(task)
     }
 
     override fun onClick(v: View) {
@@ -43,16 +67,7 @@ class TaskFormActivity : AppCompatActivity(), View.OnClickListener, DatePickerDi
         }
     }
 
-    private fun handleSave() {
-        val task = TaskModel().apply{
-            this.description = edit_description.text.toString()
-            this.complete = check_complete.isChecked
-            this.dueDate = button_date.text.toString()
-            this.priorityId = mListPriorityId[spinner_priority.selectedItemPosition]
-        }
 
-        mViewModel.save(task)
-    }
 
     private fun showDatePicker() {
         val c = Calendar.getInstance()
@@ -70,7 +85,6 @@ class TaskFormActivity : AppCompatActivity(), View.OnClickListener, DatePickerDi
                 mListPriorityId.add(item.id)
 
             }
-
             val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, list)
             spinner_priority.adapter = adapter
         })
@@ -82,6 +96,26 @@ class TaskFormActivity : AppCompatActivity(), View.OnClickListener, DatePickerDi
                 Toast.makeText(this, it.failure(), Toast.LENGTH_SHORT)
             }
         })
+
+        mViewModel.task.observe(this, androidx.lifecycle.Observer {
+            edit_description.setText(it.description)
+            check_complete.isChecked = it.complete
+            spinner_priority.setSelection(getIndex(it.priorityId))
+
+            val date = SimpleDateFormat("dd/MM/yyyy").parse(it.dueDate)
+            button_date.text = mDateFormat.format(date)
+        })
+    }
+
+    private fun getIndex(priorityId: Int): Int {
+        var index = 0
+        for (i in 0 until mListPriorityId.count()){
+            if(mListPriorityId[i] == priorityId){
+                index = 1
+                break
+            }
+        }
+        return index
 
     }
 

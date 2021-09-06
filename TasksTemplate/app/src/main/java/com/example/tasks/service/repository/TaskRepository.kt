@@ -12,7 +12,7 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 
-class TaskRepository(val context: Context) {
+class TaskRepository(val context: Context): BaseRepository(context) {
 
     private val mRemote = RetrofitClient.createService(TaskService::class.java)
 
@@ -32,6 +32,13 @@ class TaskRepository(val context: Context) {
     }
 
     private fun list(call: Call<List<TaskModel>>, listener: APIListener<List<TaskModel>>) {
+
+        // Verificação de internet
+        if (!isConnectionAvailable(context)) {
+            listener.onFailure(context.getString(R.string.ERROR_INTERNET_CONNECTION))
+            return
+        }
+
         call.enqueue(object : Callback<List<TaskModel>> {
 
             override fun onFailure(call: Call<List<TaskModel>>, t: Throwable) {
@@ -57,6 +64,13 @@ class TaskRepository(val context: Context) {
     }
 
     fun create(task: TaskModel, listener: APIListener<Boolean>) {
+
+        // Verificação de internet
+        if (!isConnectionAvailable(context)) {
+            listener.onFailure(context.getString(R.string.ERROR_INTERNET_CONNECTION))
+            return
+        }
+
         val call: Call<Boolean> =
             mRemote.create(task.priorityId, task.description, task.dueDate, task.complete)
         call.enqueue(object : Callback<Boolean> {
@@ -79,5 +93,124 @@ class TaskRepository(val context: Context) {
         })
     }
 
+    fun update(task: TaskModel, listener: APIListener<Boolean>) {
+
+        // Verificação de internet
+        if (!isConnectionAvailable(context)) {
+            listener.onFailure(context.getString(R.string.ERROR_INTERNET_CONNECTION))
+            return
+        }
+
+        val call: Call<Boolean> =
+            mRemote.update(task.id, task.priorityId, task.description, task.dueDate, task.complete)
+        call.enqueue(object : Callback<Boolean> {
+
+            override fun onFailure(call: Call<Boolean>, t: Throwable) {
+                listener.onFailure(context.getString(R.string.ERROR_UNEXPECTED))
+            }
+
+
+            override fun onResponse(call: Call<Boolean>, response: Response<Boolean>) {
+                if (response.code() != TaskConstants.HTTP.SUCCESS) {
+                    val validation =
+                        Gson().fromJson(response.errorBody()!!.string(), String::class.java)
+                    listener.onFailure(validation)
+                } else {
+                    response.body()?.let { listener.onSucess(it) }
+                }
+            }
+
+        })
+    }
+
+    fun updateStatus(id: Int, complete: Boolean, listener: APIListener<Boolean>) {
+
+        // Verificação de internet
+        if (!isConnectionAvailable(context)) {
+            listener.onFailure(context.getString(R.string.ERROR_INTERNET_CONNECTION))
+            return
+        }
+
+        val call = if(complete){
+            mRemote.comlete(id)
+        }else{
+            mRemote.undo(id)
+        }
+        call.enqueue(object : Callback<Boolean> {
+
+            override fun onFailure(call: Call<Boolean>, t: Throwable) {
+                listener.onFailure(context.getString(R.string.ERROR_UNEXPECTED))
+            }
+
+            override fun onResponse(call: Call<Boolean>, response: Response<Boolean>) {
+                if (response.code() != TaskConstants.HTTP.SUCCESS) {
+                    val validation =
+                        Gson().fromJson(response.errorBody()!!.string(), String::class.java)
+                    listener.onFailure(validation)
+                } else {
+                    response.body()?.let { listener.onSucess(it) }
+                }
+            }
+
+        })
+
+    }
+
+    fun delete(id: Int, listener: APIListener<Boolean>) {
+
+        // Verificação de internet
+        if (!isConnectionAvailable(context)) {
+            listener.onFailure(context.getString(R.string.ERROR_INTERNET_CONNECTION))
+            return
+        }
+
+        val call: Call<Boolean> = mRemote.delete(id)
+        call.enqueue(object : Callback<Boolean> {
+
+            override fun onFailure(call: Call<Boolean>, t: Throwable) {
+                listener.onFailure(context.getString(R.string.ERROR_UNEXPECTED))
+            }
+
+            override fun onResponse(call: Call<Boolean>, response: Response<Boolean>) {
+                if (response.code() != TaskConstants.HTTP.SUCCESS) {
+                    val validation =
+                        Gson().fromJson(response.errorBody()!!.string(), String::class.java)
+                    listener.onFailure(validation)
+                } else {
+                    response.body()?.let { listener.onSucess(it) }
+                }
+            }
+
+        })
+    }
+
+    fun load(id: Int, listener: APIListener<TaskModel>) {
+
+        // Verificação de internet
+        if (!isConnectionAvailable(context)) {
+            listener.onFailure(context.getString(R.string.ERROR_INTERNET_CONNECTION))
+            return
+        }
+
+        val call: Call<TaskModel> = mRemote.load(id)
+        call.enqueue(object : Callback<TaskModel> {
+
+            override fun onFailure(call: Call<TaskModel>, t: Throwable) {
+                listener.onFailure(context.getString(R.string.ERROR_UNEXPECTED))
+            }
+
+
+            override fun onResponse(call: Call<TaskModel>, response: Response<TaskModel>) {
+                if (response.code() != TaskConstants.HTTP.SUCCESS) {
+                    val validation =
+                        Gson().fromJson(response.errorBody()!!.string(), String::class.java)
+                    listener.onFailure(validation)
+                } else {
+                    response.body()?.let { listener.onSucess(it) }
+                }
+            }
+
+        })
+    }
 
 }
